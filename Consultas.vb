@@ -163,7 +163,7 @@
 
     Public Sub ConectarPredioAguaPotable()
         Dim predio As Acad3DSolid
-        Dim p(0 To 2) As Double           'Centroide de predio'
+        Dim p() As Double           'Centroide de predio'
         Dim p1(0 To 2) As Double          'Punto auxiliar'
         Dim p2(0 To 2) As Double          'Punto auxiliar'
         Dim corners() As Double           'Arreglo para almacenar los puntos del polígono de selección
@@ -172,7 +172,6 @@
         Dim d As Double
         Dim a As Double
         Dim linea As AcadLine
-        Dim lineaTmp As AcadLine
 
         'Dim perimeter As AcadPolyline    'Polyline para el rectángulo
 
@@ -181,40 +180,46 @@
         'Se lee una coordenada
         predio = ObtenerEntidad("Seleccione el predio")
 
-        If Not IsNothing(predio) Then
-            p = predio.Centroid     'Se obtiene el centroide del predio
-            p(2) = 0                'Se hace z= 0
+        Dim success = False
+        While Not success
+            Try
+                If Not IsNothing(predio) Then
+                    p = predio.Centroid     'Se obtiene el centroide del predio
+                    p(2) = 0                'Se hace z= 0
 
-            predio.GetBoundingBox(p1, p2)
-            p1(2) = 0
-            lineaTmp = document.ModelSpace.AddLine(p, p1)
-            radio = lineaTmp.Length
-            lineaTmp.Delete()
+                    predio.GetBoundingBox(p1, p2)
+                    p1(2) = 0
+                    radio = Dist2Points(p, p1)
 
-            If Not IsNothing(radio) Then
-                'Se determinan puntos del circulo
-                corners = GeneraCoordenadasCirculo(p, radio, 0, 360, 20)
+                    If Not IsNothing(radio) Then
+                        'Se determinan puntos del circulo
+                        corners = GeneraCoordenadasCirculo(p, radio, 0, 360, 20)
 
-                'Se crea el conjunto vacío
-                objectSet = CrearConjuntoVacio(document, "IDLE")
+                        'Se crea el conjunto vacío
+                        objectSet = CrearConjuntoVacio(document, "IDLE")
 
-                If Not IsNothing(objectSet) Then
-                    'Se añaden los objetos dentro del rectángulo al conjunto
-                    objectSet.SelectByPolygon(AcSelect.acSelectionSetCrossingPolygon, corners)
-                    For Each element In objectSet
-                        If ObtenerPropiedad(element, "Tipo") = "Tuberia de Agua" Then
-                            d = Dist2Line(p, element, p1)
-                            linea = document.ModelSpace.AddLine(p, p1)
-                            linea.Update()
-                            ConfigurarPropiedad(predio, "AguaPotable", linea.Handle)
-                            ConfigurarPropiedad(linea, "Tipo", "Tuberia de Agua")
-                            Exit For
+                        If Not IsNothing(objectSet) Then
+                            'Se añaden los objetos dentro del rectángulo al conjunto
+                            objectSet.SelectByPolygon(AcSelect.acSelectionSetCrossingPolygon, corners)
+                            For Each element In objectSet
+                                If ObtenerPropiedad(element, "Tipo") = "Tuberia de Agua" Then
+                                    d = Dist2Line(p, element, p1)
+                                    linea = document.ModelSpace.AddLine(p, p1)
+                                    linea.Update()
+                                    ConfigurarPropiedad(predio, "AguaPotable", linea.Handle)
+                                    ConfigurarPropiedad(linea, "Tipo", "Conexión Agua")
+                                    Exit For
+                                End If
+                            Next
+                            objectSet.Delete()
                         End If
-                    Next
-                    objectSet.Delete()
+                    End If
                 End If
-            End If
-        End If
+                success = True
+            Catch ex As Exception
+                success = False
+            End Try
+        End While
     End Sub
 
 End Module

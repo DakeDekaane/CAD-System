@@ -2,7 +2,7 @@
     Private Sub ConexiónAAutoCADToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ConexiónAAutoCADToolStripMenuItem.Click
         'Conexión a AutoCAD
         InicializaConexion()
-        If Not document Is Nothing Then
+        If document IsNot Nothing Then
             dwgActual.Text = "Plano conectado: " & document.Name
         Else
             dwgActual.Text = "No estamos conectados aún"
@@ -66,10 +66,22 @@
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
-        Dim tiempo As Integer = CInt(TextBoxTiempo.Text)
+        Dim tiempo As Integer
+        Dim autos As List(Of Auto)
+        Dim semaforos As List(Of AcadEntity)
+
+        Try
+            tiempo = CInt(TextBoxTiempo.Text)
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Information, "CAD")
+        End Try
+
         If tiempo > 0 Then
+            autos = PrepararAutos()
+            semaforos = PrepararSemaforos()
+
             For i = 1 To tiempo
-                Simular()
+                Simular(autos, semaforos)
             Next
         End If
 

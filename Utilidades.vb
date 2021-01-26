@@ -57,8 +57,8 @@
             pPolar = utility.PolarPoint(p, angulo, radio) '!!!'
             ReDim Preserve puntos(pN + 2)
             puntos(pN) = pPolar(0) : puntos(pN + 1) = pPolar(1) : puntos(pN + 2) = pPolar(2)
-            angulo = angulo + stepAngle
-            pN = pN + 3
+            angulo += stepAngle
+            pN += 3
 
         Next
         Return puntos
@@ -80,24 +80,32 @@
         t = ((punto(0) - x1) * dx + (punto(1) - y1) * dy) / (dx * dx + dy * dy)
 
         If t < 0 Then
-            dx = punto(0) - x1
-            dy = punto(1) - y1
+            'dx = punto(0) - x1
+            'dy = punto(1) - y1
             cerca(0) = x1
             cerca(1) = y1
         ElseIf t > 1 Then
-            dx = punto(0) - x2
-            dy = punto(1) - y2
+            'dx = punto(0) - x2
+            'dy = punto(1) - y2
             cerca(0) = x2
             cerca(1) = y2
         Else
             cerca(0) = x1 + t * dx
             cerca(1) = y1 + t * dy
-            dx = punto(0) - cerca(0)
-            dy = punto(1) - cerca(1)
+            'dx = punto(0) - cerca(0)
+            'dy = punto(1) - cerca(1)
         End If
         Return t
     End Function
     Public Function SonIguales(endPoint() As Double, startPoint() As Double) As Boolean
         Return endPoint(0) = startPoint(0) And endPoint(1) = startPoint(1)
     End Function
+
+
+    Public Function Dist2Points(a() As Double, b() As Double) As Double
+        Dim distancia As Double
+        distancia = Math.Sqrt((a(0) - b(0)) ^ 2 + (a(1) - b(1)) ^ 2)
+        Return distancia
+    End Function
+
 End Module
